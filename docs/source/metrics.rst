@@ -11,72 +11,15 @@ Metrics are used to monitor model performance.
 
 In this package we provide two major pieces of functionality.
 
-1. A Metric class you can use to implement metrics with built-in distributed (ddp) support which are device agnostic.
-2. A collection of popular metrics already implemented for you.
+1. A collection of ready to use pupular metrics. There are two types of metrics: Class metrics and Functional metrics.
+2. A Metric class you can use to implement custom metrics with built-in distributed (DDP) support which are device agnostic.
 
-Example::
-
-    from pytorch_lightning.metrics.functional import accuracy
-
-    pred = torch.tensor([0, 1, 2, 3])
-    target = torch.tensor([0, 1, 2, 2])
-
-    # calculates accuracy across all GPUs and all Nodes used in training
-    accuracy(pred, target)
-
-Out::
-
-    tensor(0.7500)
-
---------------
-
-Implement a metric
-------------------
-You can implement metrics as either a PyTorch metric or a Numpy metric. Numpy metrics
-will slow down training, use PyTorch metrics when possible.
-
-Use :class:`TensorMetric` to implement native PyTorch metrics. This class
-handles automated DDP syncing and converts all inputs and outputs to tensors.
-
-Use :class:`NumpyMetric` to implement numpy metrics. This class
-handles automated DDP syncing and converts all inputs and outputs to tensors.
-
-.. warning::
-    Numpy metrics might slow down your training substantially,
-    since every metric computation requires a GPU sync to convert tensors to numpy.
-
-TensorMetric
-^^^^^^^^^^^^
-Here's an example showing how to implement a TensorMetric
-
-.. testcode::
-
-    class RMSE(TensorMetric):
-        def forward(self, x, y):
-            return torch.sqrt(torch.mean(torch.pow(x-y, 2.0)))
-
-.. autoclass:: pytorch_lightning.metrics.metric.TensorMetric
-    :noindex:
-
-NumpyMetric
-^^^^^^^^^^^
-Here's an example showing how to implement a NumpyMetric
-
-.. testcode::
-
-    class RMSE(NumpyMetric):
-        def forward(self, x, y):
-            return np.sqrt(np.mean(np.power(x-y, 2.0)))
-        
-
-.. autoclass:: pytorch_lightning.metrics.metric.NumpyMetric
-    :noindex:
 
 --------------
 
 Class Metrics
 -------------
-The following are metrics which can be instantiated as part of a module definition (even with just
+Class metrics can be instantiated as part of a module definition (even with just
 plain PyTorch).
 
 .. testcode::
@@ -197,6 +140,20 @@ MulticlassPrecisionRecall
 Functional Metrics
 ------------------
 
+Usage Example::
+
+    from pytorch_lightning.metrics.functional import accuracy
+
+    pred = torch.tensor([0, 1, 2, 3])
+    target = torch.tensor([0, 1, 2, 2])
+
+    # calculates accuracy across all GPUs and all Nodes used in training
+    accuracy(pred, target)
+
+Out::
+
+    tensor(0.7500)
+
 accuracy (F)
 ^^^^^^^^^^^^
 
@@ -315,4 +272,49 @@ to_onehot (F)
 ^^^^^^^^^^^^^
 
 .. autofunction:: pytorch_lightning.metrics.functional.to_onehot
+    :noindex:
+
+
+--------------
+
+Implementing a custom metric
+------------------
+You can implement metrics as either a PyTorch metric or a Numpy metric (PyTorch metrics
+are preferred , as Numpy metrics slow down training).
+
+Use :class:`TensorMetric` to implement native PyTorch metrics. This class
+handles automated DDP syncing and converts all inputs and outputs to tensors.
+
+Use :class:`NumpyMetric` to implement Numpy metrics. This class
+handles automated DDP syncing and converts all inputs and outputs to tensors.
+
+.. warning::
+    Numpy metrics might slow down your training substantially,
+    since every metric computation requires a GPU sync to convert tensors to Numpy.
+
+TensorMetric
+^^^^^^^^^^^^
+Here's an example showing how to implement a TensorMetric
+
+.. testcode::
+
+    class RMSE(TensorMetric):
+        def forward(self, x, y):
+            return torch.sqrt(torch.mean(torch.pow(x-y, 2.0)))
+
+.. autoclass:: pytorch_lightning.metrics.metric.TensorMetric
+    :noindex:
+
+NumpyMetric
+^^^^^^^^^^^
+Here's an example showing how to implement a NumpyMetric
+
+.. testcode::
+
+    class RMSE(NumpyMetric):
+        def forward(self, x, y):
+            return np.sqrt(np.mean(np.power(x-y, 2.0)))
+        
+
+.. autoclass:: pytorch_lightning.metrics.metric.NumpyMetric
     :noindex:
